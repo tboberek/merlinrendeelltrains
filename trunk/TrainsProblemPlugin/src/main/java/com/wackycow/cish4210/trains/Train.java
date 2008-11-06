@@ -2,10 +2,23 @@ package com.wackycow.cish4210.trains;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
-public class Train {
+public class Train implements Runnable {
 
-    private List<String> route = new ArrayList<String>();
+	// TODO: Create Route
+	
+	private TrainsGraph graph;
+	
+    public TrainsGraph getGraph() {
+		return graph;
+	}
+
+	public void setGraph(TrainsGraph graph) {
+		this.graph = graph;
+	}
+
+	private List<String> route = new ArrayList<String>();
     
     private int position = 0;
     
@@ -31,5 +44,22 @@ public class Train {
     public int getPosition() {
         return position;
     }
+
+	public void run() {
+
+		Random generator = new Random();
+		for (position = 0; position < route.size(); ++position) {
+    		// Sleep for some random time
+			try {
+				Thread.sleep (Math.abs(generator.nextInt (2000)));
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			graph.moveTrain(this, getNextStation());
+		}
+		
+	}
+    
     
 }
