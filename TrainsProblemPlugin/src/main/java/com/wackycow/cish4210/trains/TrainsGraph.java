@@ -2,7 +2,9 @@ package com.wackycow.cish4210.trains;
 
 import giny.model.Edge;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import cytoscape.CyEdge;
@@ -18,12 +20,17 @@ public class TrainsGraph {
     private Map<String,Train> trains = new HashMap<String,Train> ();
     
 
-    public TrainsGraph(CyNetwork network) {
+    public Map<String, Train> getTrains() {
+		return trains;
+	}
+
+	public TrainsGraph(CyNetwork network) {
         this.network = network;
     }
  
     public void addTrain(Train train) {
         trains.put(train.getId(), train);
+        train.setGraph(this);
     }
     
     public void setDispatcher(Dispatcher disp) {
@@ -34,10 +41,20 @@ public class TrainsGraph {
         return dispatcher;
     }
     
-    public void moveTrain(Train t, String stationId, String trackId) {
-        if (dispatcher.checkMoveTrain(t, stationId, trackId)) {
-            doMoveTrain(t, stationId, trackId);
-        }
+    List<String> getNodeConnections(String stationId) {
+    	List<String> result = new ArrayList<String>();
+		return result;
+    }
+    
+    /** 
+     * 
+     * @param t Train to move from station to station.
+     * @param stationId destination of the train.
+     * @param trackId the track to travel over.
+     */
+    public void moveTrain(Train t, String stationId) {
+        dispatcher.checkMoveTrain(this, t, stationId);
+        doMoveTrain(t, stationId);
     }
 
     public boolean claimTrack(Train t, String trackId, int timeout) {
@@ -52,6 +69,14 @@ public class TrainsGraph {
         
         CyNode node = Cytoscape.getCyNode(stationId, true);
         
+    }
+    
+    public void createGraph(Map<String,List<String>> graph) {
+    	for (String node : graph.keySet()) {
+    		for (String destination : graph.get(node)) {
+        		createConnection(node,destination);
+    		}
+    	}
     }
     
     public void createConnection(String sourceId, String destinationId) {
@@ -73,7 +98,7 @@ public class TrainsGraph {
         return "Engine_House";
     }
     
-    private void doMoveTrain(Train t, String stationId, String trackId) {
+    private void doMoveTrain(Train t, String stationId) {
     }
     
 }

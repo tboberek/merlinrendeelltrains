@@ -11,6 +11,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Iterator;
 import java.util.Collections;
+import java.util.Random;
 
 import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
@@ -40,22 +41,34 @@ public class GenerateNetworkAction extends SelectedNodeAction {
 
 	@Override
 	public void doAction(List<Node> nodes, CyNetwork network, CyNetworkView view, CyAttributes attributes) {
+		TrainsGraph graph = new TrainsGraph(network);
+		
 		getTaskMonitor().setPercentCompleted(0);
 		int nodesCompleted = 0;
-		for(Node node : nodes) {
-			if (isCancelled()) break;
-			if (node == null) continue;
-			String id = node.getIdentifier();
-
-			Object result = null;
-			getTaskMonitor().setStatus("Looking up "+ id);
-			
-			if (isCancelled()) break;
-
-			nodesCompleted++;
-			updatePercentage(nodesCompleted, nodes.size());
-		}
+		createStations(graph);
+		createTrainsAndRoutes(graph);
+		
 	}
 
+	private void createStations(TrainsGraph graph) {
+		int size = 10;
+
+		List<String> stations  = new ArrayList<String>();
+		for (int i=0; i<size; ++i) {
+			String id = "Station "+i;
+			System.out.println(id);
+			stations.add(id);
+			graph.createStation(id);
+			getTaskMonitor().setPercentCompleted((int)(((double)i)/size* 100));
+		}
+
+		graph.createStation(graph.getEngineHouseId());
+		
+	}
+	
+	private void createTrainsAndRoutes(TrainsGraph graph) {
+		
+	}
+	
 	
 }
