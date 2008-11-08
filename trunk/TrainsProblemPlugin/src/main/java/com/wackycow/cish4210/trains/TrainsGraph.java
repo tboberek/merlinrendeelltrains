@@ -12,6 +12,7 @@ import cytoscape.CyNetwork;
 import cytoscape.CyNode;
 import cytoscape.Cytoscape;
 import cytoscape.data.CyAttributesUtils;
+import cytoscape.data.Semantics;
 
 public class TrainsGraph {
 
@@ -66,9 +67,8 @@ public class TrainsGraph {
     }
 
     public void createStation(String stationId) {
-        
         CyNode node = Cytoscape.getCyNode(stationId, true);
-        
+        network.addNode(node);
     }
     
     public void createGraph(Map<String,List<String>> graph) {
@@ -82,11 +82,17 @@ public class TrainsGraph {
     public void createConnection(String sourceId, String destinationId) {
         CyNode source = Cytoscape.getCyNode(sourceId, true);
         CyNode destination = Cytoscape.getCyNode(destinationId, true);
-        CyEdge edge = Cytoscape.getCyEdge(source, destination, "name", 
-                                            sourceId+"_"+destinationId, true);
-        edge.setIdentifier(sourceId+"_"+destinationId);
+        CyEdge edge = Cytoscape.getCyEdge(source, destination, Semantics.INTERACTION, 
+                                            "track", true);
+        edge.setIdentifier(sourceId+"->"+destinationId);
         Cytoscape.getEdgeAttributes().setAttribute(edge.getIdentifier(),
-                                                   "type", "track");
+                "source", sourceId);
+        Cytoscape.getEdgeAttributes().setAttribute(edge.getIdentifier(),
+                "destination", destinationId);
+        System.out.println(edge.getIdentifier());
+        network.addNode(source);
+        network.addNode(destination);
+        network.addEdge(edge);
     }
     
     public Train getTrainAtStation(String stationId) {

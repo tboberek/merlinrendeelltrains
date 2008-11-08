@@ -28,4 +28,9 @@ public class NaiveDispatcher extends Dispatcher {
 		getMonitor(t.getCurrentStation()).notify();
 	}
 
+    @Override
+    public String getName() {
+        return "Naive Dispatcher";
+    }
+
 }
