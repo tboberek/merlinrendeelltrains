@@ -10,15 +10,18 @@ import cytoscape.view.CyNetworkView;
 
 public class RunSimulator extends SelectedNodeAction {
 
-    public RunSimulator(String name) {
-        super("Run simulator using the "+name +" algorithm.");
+    public RunSimulator() {
+        super("Run MRTP simulator");
     }
 
     @Override
     public void doAction(List<Node> nodes, CyNetwork network,
             CyNetworkView view, CyAttributes attributes) {
-        // TODO Auto-generated method stub
-
+    }
+    
+    private void runSimulation(Dispatcher dispatcher) {
+        // TODO: Implement the simulator.
+        
     }
 
 }
