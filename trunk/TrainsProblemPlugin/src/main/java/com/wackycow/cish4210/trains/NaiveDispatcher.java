@@ -15,17 +15,21 @@ public class NaiveDispatcher extends Dispatcher {
 	}
 	
 	@Override
-	public void checkMoveTrain(TrainsGraph g, Train t, String stationId) {
+	public synchronized void checkMoveTrain(TrainsGraph g, Train t, String stationId) {
 		
 		if (g.getTrainAtStation(stationId) != null) {
-			try {
-				getMonitor(stationId).wait();
-			} catch (InterruptedException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
+            Object monitor = getMonitor(stationId);
+            synchronized(monitor) {
+                try {
+                    monitor.wait();
+                } catch (InterruptedException e1) {
+                }
+            }
 		}
-		getMonitor(t.getCurrentStation()).notify();
+        Object monitor = getMonitor(t.getCurrentStation());
+        synchronized(monitor) {
+            monitor.notify();
+        }
 	}
 
     @Override

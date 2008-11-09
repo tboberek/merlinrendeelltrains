@@ -24,8 +24,11 @@ public class Train implements Runnable {
     
     private String id;
 
+    public void setId(String id) {
+        this.id = id;
+    }
+
     public String getId() {
-        // TODO Auto-generated method stub
         return id;
     }
 
@@ -48,10 +51,11 @@ public class Train implements Runnable {
 	public void run() {
 
 		Random generator = new Random();
-		for (position = 0; position < route.size(); ++position) {
+		for (position = 0; position < route.size()-1; ++position) {
     		// Sleep for some random time
 			try {
-				Thread.sleep (Math.abs(generator.nextInt (2000)));
+				//Thread.sleep (Math.abs(generator.nextInt (2000)));
+                Thread.sleep (2000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

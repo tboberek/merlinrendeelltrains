@@ -38,15 +38,15 @@ public class GenerateNetworkAction extends SelectedNodeAction {
 
 	
 	GenerateNetworkAction() {
-		super("Generate MRTP Network");
+		super("Create MRTP Network");
 	}
 
-	@Override
+	@SuppressWarnings("deprecation")
+    @Override
 	public void doAction(List<Node> nodes, CyNetwork network, CyNetworkView view, CyAttributes attributes) {
-		TrainsGraph graph = new TrainsGraph(network);
-		
-		getTaskMonitor().setPercentCompleted(0);
-		int nodesCompleted = 0;
+		CyNetwork net = Cytoscape.createNetwork("MRTP Network", true);
+		Cytoscape.setCurrentNetwork(net.getIdentifier());
+        TrainsGraph graph = new TrainsGraph(net);
 		createStations(graph);
 		createTrainsAndRoutes(graph);
 	}
