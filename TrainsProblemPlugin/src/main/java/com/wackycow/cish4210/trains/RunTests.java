@@ -2,6 +2,10 @@ package com.wackycow.cish4210.trains;
 
 import giny.model.Node;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
 import java.util.Iterator;
 import java.util.List;
 
@@ -13,6 +17,7 @@ public class RunTests extends SelectedNodeAction {
 
     public RunTests() {
         super("Run MRTP Tests");
+        
     }
 
     @Override
@@ -45,6 +50,5 @@ public class RunTests extends SelectedNodeAction {
         graph.addTrain(train);
         Thread t = new Thread(train);
         t.start();
-    }
-    
+    }   
 }
