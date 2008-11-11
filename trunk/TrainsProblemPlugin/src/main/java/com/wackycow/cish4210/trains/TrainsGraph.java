@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import javax.swing.SwingUtilities;
 
@@ -166,6 +167,61 @@ public class TrainsGraph {
         } catch (InvocationTargetException e) {
             e.printStackTrace();
         }
+    }
+    
+    /**
+     * Returns the total number of nodes in the graph
+     * 
+     * @return The total number of nodes in the graph
+     */
+    public Integer getStationCount () {
+    	return network.getNodeCount ();
+    }
+      
+    /**
+     * Returns a randomly generated TrainRoute that is valid in the current
+     * graph.  The TrainRoute starts and ends at the engine house
+     * 
+     * @return			A TrainRoute valid on this graph
+     */
+    public TrainRoute generateTrainRoute () {
+    	// Create an empty train route
+    	TrainRoute newRoute = new TrainRoute ();
+    	
+    	// Create a random number generator
+    	Random random = new Random ();
+    	
+    	// Get the total number of nodes in this graph.
+    	Integer minSpan = random.nextInt (getStationCount ()) + 1;
+
+    	// All trains start out at the engine house
+    	String currentNode = getEngineHouseId ();
+    	   	
+    	// While we either have not visited enough stations or are
+    	// not back at the engine house, continue
+    	while (0 < minSpan-- || getEngineHouseId () != currentNode)
+    	{
+    		// Add the current node to our route
+    		newRoute.add(currentNode);
+    		
+    		// Get the list of connections from the current station
+    		List<String> destinations = getNodeConnections (currentNode);
+    		
+    		// Try to guess a good next destination.  If we have not visited
+    		// enough stations, then the engine house is not a valid destination
+    		do {
+    			// Randomly select a new destination
+    			Integer destinationGuess = random.nextInt (destinations.size ());
+    		
+    			// Select a new destination at random.
+    			currentNode = destinations.get (destinationGuess);
+    		} while (minSpan > 0 && getEngineHouseId () == currentNode);
+    	}
+    	
+    	// Our last node should be the engine house, too
+    	newRoute.add (getEngineHouseId ());
+    	
+    	return newRoute;
     }
     
 }
