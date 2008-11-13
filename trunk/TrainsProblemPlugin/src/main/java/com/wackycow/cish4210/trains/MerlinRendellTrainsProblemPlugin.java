@@ -18,6 +18,9 @@ public class MerlinRendellTrainsProblemPlugin extends CytoscapePlugin {
         action = new RunTests();
         action.setPreferredMenu("Plugins");
         Cytoscape.getDesktop().getCyMenus().addAction(action);
+        action = new ImportTrainsAction();
+        action.setPreferredMenu("Plugins");
+        Cytoscape.getDesktop().getCyMenus().addAction(action);
 	}
 	
 }

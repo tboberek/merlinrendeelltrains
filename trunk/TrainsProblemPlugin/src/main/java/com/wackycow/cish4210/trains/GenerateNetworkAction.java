@@ -2,10 +2,6 @@ package com.wackycow.cish4210.trains;
 
 
 import java.awt.event.ActionEvent;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashSet;
@@ -22,8 +18,6 @@ import java.util.Set;
 import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
-
-import org.omg.CORBA.SystemException;
 
 import cytoscape.CyNetwork;
 import cytoscape.Cytoscape;
@@ -54,10 +48,9 @@ public class GenerateNetworkAction extends SelectedNodeAction {
 		CyNetwork net = Cytoscape.createNetwork("MRTP Network", true);
 		Cytoscape.setCurrentNetwork(net.getIdentifier());
         TrainsGraph graph = new TrainsGraph(net);
+        net.putClientData("TrainsGraph", graph);
 		createStations(graph);
 		createTrainsAndRoutes(graph);
-		
-		//testRouteGenerator (graph);
 	}
 
 	private void createStations(TrainsGraph graph) {
@@ -101,24 +94,6 @@ public class GenerateNetworkAction extends SelectedNodeAction {
 	private void createTrainsAndRoutes(TrainsGraph graph) {
 		
 	}
-	
-    private void testRouteGenerator (TrainsGraph graph) {
-    	try {
-	    	Writer output = new BufferedWriter (new FileWriter ("c:\\test-route.txt"));
-	    	
-	    	TrainRoute route = graph.generateTrainRoute();
-	    	
-    		for (String id : route) {
-    			output.write (id);
-    			output.write("\n");
-    		}
-
-    	}
-    	catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-    }
 	
 	
 }

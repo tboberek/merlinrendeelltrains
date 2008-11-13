@@ -16,20 +16,7 @@ public class NaiveDispatcher extends Dispatcher {
 	
 	@Override
 	public synchronized void checkMoveTrain(TrainsGraph g, Train t, String stationId) {
-		
-		if (g.getTrainAtStation(stationId) != null) {
-            Object monitor = getMonitor(stationId);
-            synchronized(monitor) {
-                try {
-                    monitor.wait();
-                } catch (InterruptedException e1) {
-                }
-            }
-		}
-        Object monitor = getMonitor(t.getCurrentStation());
-        synchronized(monitor) {
-            monitor.notify();
-        }
+		// Has been moved to the TrainsGraph.doMoveTrain itself, and is therefore part of the world that a train has to wait for another train to move to that station.
 	}
 
     @Override
