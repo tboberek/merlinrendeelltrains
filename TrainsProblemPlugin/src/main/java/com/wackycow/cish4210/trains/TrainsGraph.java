@@ -152,21 +152,11 @@ public class TrainsGraph {
         synchronized(mon) {
             mon.notify();
         }
-        try {
-            SwingUtilities.invokeAndWait(new Runnable() {
-                public void run() {
-                    Cytoscape.getNodeAttributes().setAttribute(stationId, 
-                                                               "train",t.getId());
-                    Cytoscape.getNodeAttributes().deleteAttribute(t.getCurrentStation(),
-                    "train");
-                    Cytoscape.getCurrentNetworkView().updateView();
-                    Cytoscape.getCurrentNetworkView().redrawGraph(true, true);
-                }
-            });
-        } catch (InterruptedException e) {
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        }
+        Cytoscape.getNodeAttributes().setAttribute(stationId,"train",t.getId());
+        Cytoscape.getNodeAttributes().deleteAttribute(t.getCurrentStation(),"train");
+        Cytoscape.getCurrentNetworkView().updateView();
+        Cytoscape.getCurrentNetworkView().redrawGraph(true, true);
+        
     }
     
     /**
