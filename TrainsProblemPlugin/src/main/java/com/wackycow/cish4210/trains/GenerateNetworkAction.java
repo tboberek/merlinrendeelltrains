@@ -31,6 +31,7 @@ import cytoscape.CyNode;
 import cytoscape.util.CytoscapeAction;
 import cytoscape.util.CytoscapeProgressMonitor;
 import cytoscape.data.CyAttributes;
+import cytoscape.layout.CyLayouts;
 import cytoscape.view.CyNetworkView;
 import cytoscape.view.CyNodeView;
 import giny.model.Node;
@@ -86,6 +87,9 @@ public class GenerateNetworkAction extends SelectedNodeAction {
             created.add(createSet(sourceid,destid));
 			graph.createConnection(sourceid, destid);
 		}
+        
+		Cytoscape.getCurrentNetworkView().redrawGraph(false, true);
+		CyLayouts.getLayout("force-directed").doLayout();
 	}
 	
 	private Set<String> createSet(String a, String b) {
