@@ -44,6 +44,13 @@ public class TrainsGraph {
     public void addTrain(Train train) {
         trains.put(train.getId(), train);
         train.setGraph(this);
+        String lastStation = null;
+        for (String station : train.getRoute()) {
+            if (lastStation != null) {
+                createConnection(lastStation, station);
+            }
+            lastStation = station;
+        }
     }
     
     public void setDispatcher(Dispatcher disp) {
@@ -60,6 +67,7 @@ public class TrainsGraph {
     	CyNode node = Cytoscape.getCyNode(stationId, true);
     	List<Edge> edges = (List<Edge>)network.getAdjacentEdgesList(node, true, 
     	                                                            true, true);
+    	if (edges == null) return result;
     	for (Edge edge : edges) {
     	    System.out.println(edge.getIdentifier());
     	    if (edge.getSource() == node) {
@@ -98,6 +106,9 @@ public class TrainsGraph {
     }
     
     public void createConnection(String sourceId, String destinationId) {
+        if (getNodeConnections(sourceId).contains(destinationId) 
+                || getNodeConnections(destinationId).contains(sourceId))
+            return;
         CyNode source = Cytoscape.getCyNode(sourceId, true);
         CyNode destination = Cytoscape.getCyNode(destinationId, true);
         CyEdge edge = Cytoscape.getCyEdge(source, destination, Semantics.INTERACTION, 

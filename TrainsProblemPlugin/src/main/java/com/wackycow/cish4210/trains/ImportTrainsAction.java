@@ -84,7 +84,7 @@ public class ImportTrainsAction extends SelectedNodeAction {
 		while (line != null) {
 			String[] values = line.split(",");
 			if (values.length > 0) {
-				System.err.println("Loading train "+values);
+				System.err.println("Loading train "+line);
 				Train t = new Train();
 				t.setId(values[0]);
 				List<String> route = t.getRoute();
