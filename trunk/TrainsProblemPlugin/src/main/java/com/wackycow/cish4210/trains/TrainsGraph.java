@@ -17,6 +17,11 @@ import cytoscape.CyNode;
 import cytoscape.Cytoscape;
 import cytoscape.data.CyAttributesUtils;
 import cytoscape.data.Semantics;
+import cytoscape.view.CytoscapeDesktop;
+import cytoscape.visual.VisualPropertyType;
+import cytoscape.visual.calculators.BasicCalculator;
+import cytoscape.visual.mappings.ObjectMapping;
+import cytoscape.visual.mappings.PassThroughMapping;
 
 public class TrainsGraph {
 
@@ -25,6 +30,28 @@ public class TrainsGraph {
     private Map<String,Train> trains = new HashMap<String,Train> ();
     
     private Map<String,Object> monitors = new HashMap<String,Object>();
+
+	public TrainsGraph(CyNetwork network) {
+        this.network = network;
+    }
+	
+	/**
+	 * Generates a Cytoscape network and attaches to it.  
+	 * 
+	 * @param id			The id to use for the network
+	 * @param Dispatcher	The dispatcher to use to schedule the trains
+	 */
+	@SuppressWarnings("deprecation")
+	public TrainsGraph (String id, Dispatcher newDispatcher) {
+		// Create the new cytoscape network
+		network = Cytoscape.createNetwork(id, true);
+		dispatcher = newDispatcher;
+		
+		// Attach this graph to the network we just created
+		// The putClientData function is depreciated, but I 
+		// couldn't figure out the correct replacement
+		network.putClientData("TrainsGraph", this);
+	}
     
     private synchronized Object getMonitor(String stationId) {
         if (!monitors.containsKey(stationId)) {
@@ -36,10 +63,6 @@ public class TrainsGraph {
     public Map<String, Train> getTrains() {
 		return trains;
 	}
-
-	public TrainsGraph(CyNetwork network) {
-        this.network = network;
-    }
  
     public void addTrain(Train train) {
         trains.put(train.getId(), train);
@@ -61,6 +84,15 @@ public class TrainsGraph {
         return dispatcher;
     }
     
+    /**
+     * Returns the id of the network backing this graph.
+     * 
+     * @return	The id of the network backing the graph.
+     */
+    public String getId () {
+    	return network.getIdentifier ();
+    }
+    
     @SuppressWarnings({ "deprecation", "unchecked" })
     List<String> getNodeConnections(String stationId) {
     	List<String> result = new ArrayList<String>();
@@ -79,6 +111,11 @@ public class TrainsGraph {
     	    }
     	}
 		return result;
+    }
+    
+    public void setAsActiveGraph () {
+    	Cytoscape.firePropertyChange (CytoscapeDesktop.NETWORK_VIEW_FOCUS, null,
+    			network.getIdentifier ());
     }
     
     /** 
@@ -149,7 +186,6 @@ public class TrainsGraph {
     }
     
     private synchronized void doMoveTrain(final Train t, final String stationId) {
-        System.out.println("Moving from "+t.getCurrentStation()+" to "+stationId);
         if (getTrainAtStation(stationId) != null && !(stationId == getEngineHouseId())) {
             Object mon = getMonitor(stationId);
             synchronized(mon) {
@@ -185,9 +221,9 @@ public class TrainsGraph {
      * 
      * @return			A TrainRoute valid on this graph
      */
-    public TrainRoute generateTrainRoute () {
+    public List<String> generateTrainRoute () {
     	// Create an empty train route
-    	TrainRoute newRoute = new TrainRoute ();
+    	List<String> newRoute = new ArrayList<String> ();
     	
     	// Create a random number generator
     	Random random = new Random ();
@@ -223,6 +259,33 @@ public class TrainsGraph {
     	newRoute.add (getEngineHouseId ());
     	
     	return newRoute;
+    }
+    
+    /**
+     * Sets the visual style of the graph so that the train system displays
+     * correctly.  The Train attribute must be a part of the nodes.
+     */
+    public void setVisualStyle () {
+    	// Create a node label visual property
+    	VisualPropertyType nodeProp = VisualPropertyType.NODE_LABEL;
+    	
+    	// Get the default value for the label in the current style
+    	Object labelDefaultValue = 
+    		nodeProp.getDefault(Cytoscape.getVisualMappingManager ().getVisualStyle ());
+    	
+    	// Create a new pass-through mapping for the node.
+    	PassThroughMapping pm = 
+    		new PassThroughMapping (labelDefaultValue, ObjectMapping.NODE_MAPPING);
+    	
+    	// Set the controlling attribute for the node label to "train" (it had better
+    	// exist...)
+    	pm.setControllingAttributeName ("train", network, false);
+    	
+    	// Create a calculator based on these settings
+    	BasicCalculator calc = new BasicCalculator ("Train Calc", pm, VisualPropertyType.NODE_LABEL);
+    	
+    	// Set the node appearance calculator to the newly-created calculator
+    	Cytoscape.getVisualMappingManager ().getVisualStyle ().getNodeAppearanceCalculator ().setCalculator(calc);
     }
     
 }
