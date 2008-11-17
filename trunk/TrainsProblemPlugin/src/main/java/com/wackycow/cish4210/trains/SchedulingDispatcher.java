@@ -4,6 +4,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+/** 
+ * Abstract dispatcher that allows the production of a schedule 
+ * around critical paths in the system.
+*/
 public abstract class SchedulingDispatcher extends Dispatcher {
 
     List<ScheduleItem> schedule = null;
