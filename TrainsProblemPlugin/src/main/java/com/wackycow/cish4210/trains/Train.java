@@ -17,6 +17,10 @@ public class Train implements Runnable {
 	public void setGraph(TrainsGraph graph) {
 		this.graph = graph;
 	}
+	
+	public void setRoute (List<String> newRoute) {
+		route = newRoute;
+	}
 
 	private List<String> route = new ArrayList<String>();
     
@@ -50,7 +54,8 @@ public class Train implements Runnable {
 
 	public void run() {
 
-		Random generator = new Random();
+		//Random generator = new Random();
+		
 		for (position = 0; position < route.size()-1; ++position) {
     		// Sleep for some random time
 			try {
@@ -60,7 +65,14 @@ public class Train implements Runnable {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			graph.moveTrain(this, getNextStation());
+		
+			// Debug output
+		System.out.println ("(" + getId () + ") requesting move " +
+				"from " + getCurrentStation () + " to " + 
+				getNextStation ());
+		
+		// Attempt to move
+		graph.moveTrain(this, getNextStation());
 		}
 		
 	}
