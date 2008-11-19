@@ -185,7 +185,7 @@ public class TrainsGraph {
         }
     }
     
-    private synchronized void doMoveTrain(final Train t, final String stationId) {
+    private void doMoveTrain(final Train t, final String stationId) {
         if (getTrainAtStation(stationId) != null && !(stationId == getEngineHouseId())) {
             Object mon = getMonitor(stationId);
             synchronized(mon) {
