@@ -82,6 +82,9 @@ public abstract class SchedulingDispatcher extends Dispatcher {
         public ScheduleItem() {
             
         }
+        public String toString() {
+            return "ScheduleItem:\t"+train.getId()+"\t"+station+"\t"+position;
+        }
     }
 
 }
