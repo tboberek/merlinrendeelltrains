@@ -9,5 +9,7 @@ public abstract class Dispatcher {
     public String toString() {
         return getName();
     }
+
+    abstract public void initialize();
     
 }

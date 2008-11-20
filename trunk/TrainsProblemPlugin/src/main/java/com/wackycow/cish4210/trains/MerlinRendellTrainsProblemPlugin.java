@@ -10,21 +10,21 @@ import cytoscape.plugin.CytoscapePlugin;
 public class MerlinRendellTrainsProblemPlugin extends CytoscapePlugin {
 	public MerlinRendellTrainsProblemPlugin () {
 		SelectedNodeAction action = new GenerateNetworkAction();
-		action.setPreferredMenu("Plugins");
+		action.setPreferredMenu("MRTP");
 		Cytoscape.getDesktop().getCyMenus().addAction(action);
         action = new RunSimulator();
-        action.setPreferredMenu("Plugins");
+        action.setPreferredMenu("MRTP");
         Cytoscape.getDesktop().getCyMenus().addAction(action);
         action = new RunTests();
-        action.setPreferredMenu("Plugins");
+        action.setPreferredMenu("MRTP");
         Cytoscape.getDesktop().getCyMenus().addAction(action);
         action = new ImportTrainsAction();
-        action.setPreferredMenu("Plugins");
+        action.setPreferredMenu("MRTP");
         Cytoscape.getDesktop().getCyMenus().addAction(action);
         
         // Add the route testing plugin
         action = new RouteTester();
-        action.setPreferredMenu("Plugins");
+        action.setPreferredMenu("MRTP");
         Cytoscape.getDesktop().getCyMenus().addAction(action);
 	}
 	

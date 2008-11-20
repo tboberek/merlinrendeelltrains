@@ -72,6 +72,7 @@ public class ImportTrainsAction extends SelectedNodeAction {
 						e.getClass().getSimpleName(), JOptionPane.ERROR_MESSAGE);
 				e.printStackTrace();
 			}
+			graph.setVisualStyle();
 		} else {
 			return;
 		}
