@@ -29,6 +29,8 @@ public class TrainsGraph {
     private Dispatcher dispatcher;
     private Map<String,Train> trains = new HashMap<String,Train> ();
     
+    private boolean stop = false;
+    
     private Map<String,Object> monitors = new HashMap<String,Object>();
 
 	public TrainsGraph(CyNetwork network) {
@@ -53,6 +55,16 @@ public class TrainsGraph {
 		network.putClientData("TrainsGraph", this);
 	}
     
+	public synchronized boolean isStopped() {
+	    return stop;
+	}
+	
+	public void stop() {
+	    synchronized(this) {
+	        stop = true;
+	    }
+	}
+	
     private synchronized Object getMonitor(String stationId) {
         if (!monitors.containsKey(stationId)) {
             monitors.put(stationId, new Object());
@@ -186,24 +198,37 @@ public class TrainsGraph {
     }
     
     private void doMoveTrain(final Train t, final String stationId) {
-        if (getTrainAtStation(stationId) != null && !(stationId == getEngineHouseId())) {
-            Object mon = getMonitor(stationId);
-            synchronized(mon) {
+        synchronized(this) {
+            if (stop) return;
+        }
+
+        Object mon = getMonitor(stationId);
+        synchronized(mon) {
+            if (getTrainAtStation(stationId) != null 
+                    && !getEngineHouseId().equals(stationId)) {
                 try {
+                    System.out.println("TrainsGraph wait on "+t.getId()+" "+stationId);
                     mon.wait();
                 } catch (InterruptedException e1) {
                 }
             }
+            System.out.println("TrainsGraph finished wait on "+t.getId()+" "+stationId);
+
+            synchronized(this) {
+                if (stop) return;
+            }
+
+            if (!getEngineHouseId().equals(stationId))
+                Cytoscape.getNodeAttributes().setAttribute(stationId,"train",t.getId());
+            Cytoscape.getNodeAttributes().deleteAttribute(t.getCurrentStation(),"train");
+            Cytoscape.getCurrentNetworkView().updateView();
+            Cytoscape.getCurrentNetworkView().redrawGraph(true, true);
+
+            Object oldMon = getMonitor(t.getCurrentStation());
+            synchronized(oldMon) {
+                oldMon.notify();
+            }
         }
-        Object mon = getMonitor(t.getCurrentStation());
-        synchronized(mon) {
-            mon.notify();
-        }
-        Cytoscape.getNodeAttributes().setAttribute(stationId,"train",t.getId());
-        Cytoscape.getNodeAttributes().deleteAttribute(t.getCurrentStation(),"train");
-        Cytoscape.getCurrentNetworkView().updateView();
-        Cytoscape.getCurrentNetworkView().redrawGraph(true, true);
-        
     }
     
     /**
@@ -286,6 +311,15 @@ public class TrainsGraph {
     	
     	// Set the node appearance calculator to the newly-created calculator
     	Cytoscape.getVisualMappingManager ().getVisualStyle ().getNodeAppearanceCalculator ().setCalculator(calc);
+    }
+
+    public void reset() {
+        synchronized(this) {
+            stop = false;
+        }
+        Cytoscape.getNodeAttributes().deleteAttribute("train");
+        Cytoscape.getCurrentNetworkView().updateView();
+        Cytoscape.getCurrentNetworkView().redrawGraph(true, true);
     }
     
 }

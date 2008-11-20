@@ -14,28 +14,39 @@ public abstract class SchedulingDispatcher extends Dispatcher {
     List<ScheduleItem> oldSchedule = null;
     int scheduleStep = -1;
     
+    public void initialize() {
+        schedule = null;
+        scheduleStep = -1;
+    }
+    
     // TODO This still has race conditions.
     @Override
     public void checkMoveTrain(TrainsGraph g, Train t, String stationId) {
+        System.out.println("Checking train "+t+" for station "+stationId);
         synchronized(this) {
             if (schedule == null) 
                 schedule = Collections.synchronizedList(getSchedule(g.getTrains().values()));
         }
-        ScheduleItem nextStep = schedule.get(scheduleStep+1);
+        int sstep = -1;
+        synchronized(this) {
+            sstep = scheduleStep;
+        }
+        
+        ScheduleItem nextStep = schedule.get(sstep+1);
         if (nextStep.train == t 
-                && nextStep.station == stationId 
                 && nextStep.position == t.getPosition()+1) {
             // All clear.
+            System.out.println("Stepping through on "+t.getId()+" "+stationId);
         } else {
             boolean waited = false;
-            for (int i=scheduleStep+1; i<schedule.size(); ++i) {
+            for (int i=sstep+1; i<schedule.size(); ++i) {
                 ScheduleItem item = schedule.get(i);
                 if (item.train == t 
-                        && item.station == stationId 
                         && item.position == t.getPosition()+1) {
                     synchronized (item) {
                         waited = true;
                         try {
+                            System.out.println("Waiting for"+item+" on "+t.getId()+" "+stationId);
                             item.wait();
                         } catch (InterruptedException e) {
                         }
@@ -46,10 +57,13 @@ public abstract class SchedulingDispatcher extends Dispatcher {
         }
         synchronized (this) {
             scheduleStep++;
-            ScheduleItem item = schedule.get(scheduleStep+1);
-            synchronized(item) {
-                item.notify();
-            }
+        }
+        if (scheduleStep+1 >= schedule.size()) return;
+        ScheduleItem item = schedule.get(scheduleStep+1);
+        synchronized(item) {
+            System.out.println("Notifying "+item+" from "+t.getId()+" "+stationId);
+            item.notify();
+            System.out.println("Notified "+item+" from "+t.getId()+" "+stationId);
         }
     }
 
