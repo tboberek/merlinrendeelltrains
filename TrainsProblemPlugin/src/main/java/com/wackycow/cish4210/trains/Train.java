@@ -45,9 +45,25 @@ public class Train implements Runnable {
     }
 
     public String getNextStation() {
-        return route.get(position + 1);
+        if (position < route.size()) {
+            return route.get(position+1);
+        } else {return "XXXX";}
+  
     }
 
+    public String getNext2Station() {
+        if (position < (route.size() - 2)) {
+            return route.get(position+2);
+        } else {return "XXXX";}
+    }
+    
+    public String getPriorStation() {
+        if (position > 0) {
+           return route.get(position-1);
+        } else {return "XXXX";}
+    }
+    
+    
     public int getPosition() {
         return position;
     }
