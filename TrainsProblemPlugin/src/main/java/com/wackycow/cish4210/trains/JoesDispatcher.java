@@ -6,6 +6,7 @@ import java.util.Map;
 public class JoesDispatcher extends Dispatcher {
 
 	private HashMap stationcnt = new HashMap();
+        public void initialize() {}
         	
 	private  int upStationCnt(TrainsGraph g, String stationId) {
 		int i = 0;
