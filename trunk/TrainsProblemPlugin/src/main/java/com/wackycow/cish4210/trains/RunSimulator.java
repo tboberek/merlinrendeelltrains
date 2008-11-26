@@ -15,7 +15,8 @@ import cytoscape.view.CyNetworkView;
 public class RunSimulator extends SelectedNodeAction {
 
 	private Object[] dispatchers = new Object[] {
-			new NaiveDispatcher(),
+			new NaiveDispatcher(), new JoesDispatcher(),
+                        new Joes2ndDispatcher(),
             new OneAtATimeSchedulingDispatcher(),
             new McCuskerDispatcher(),
 	};
