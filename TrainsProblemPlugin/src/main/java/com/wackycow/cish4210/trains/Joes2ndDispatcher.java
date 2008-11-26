@@ -9,7 +9,7 @@ public class Joes2ndDispatcher extends Dispatcher {
 
 	private List<String> stationlist = new ArrayList<String>();
         
-     
+         public void initialize() {}
 	private synchronized boolean checkStations(Train t) {
                 int p = 0;
                 List<String> route = new ArrayList<String>();
