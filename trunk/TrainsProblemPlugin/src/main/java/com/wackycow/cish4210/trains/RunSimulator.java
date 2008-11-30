@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 import javax.swing.JOptionPane;
 
+
 import cytoscape.CyNetwork;
 import cytoscape.Cytoscape;
 import cytoscape.data.CyAttributes;
