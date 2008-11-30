@@ -32,6 +32,7 @@ public abstract class SchedulingDispatcher extends Dispatcher {
             sstep = scheduleStep;
         }
         
+        if (sstep+1 >= schedule.size()) return;
         ScheduleItem nextStep = schedule.get(sstep+1);
         if (nextStep.train == t 
                 && nextStep.position == t.getPosition()+1) {
