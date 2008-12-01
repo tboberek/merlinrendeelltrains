@@ -95,8 +95,8 @@ public class McCuskerDispatcher extends SchedulingDispatcher {
                             continue;
                         Node solutionNode = getNode(nodes, depNode.train,depPosition+1);
                         // The solution for the cycle of solutionNode supplants this one.
-                        if (solutionNode.inCycle()) continue;
-                        solution.add(new ScheduleItem(solutionNode.train,
+                        if (solutionNode != null && solutionNode.inCycle()) continue;
+                        solution.add(new ScheduleItem(depNode.train,
                                 depNode.train.getRoute().get(depPosition+1),
                                 depPosition+1));
                         solution.add(new ScheduleItem(node.train,
@@ -142,7 +142,8 @@ public class McCuskerDispatcher extends SchedulingDispatcher {
     }
     
     private Node getNode(Map<String,Node> nodes, Train t, int position) {
-        if (position -1 < 0) return null;
+        if (position -1 < 0 || t.getRoute().size() <= position) return null;
+        
         String nodeKey = t.getId()+":"+t.getRoute().get(position-1)
                         +":"+t.getRoute().get(position);
         if (!nodes.containsKey(nodeKey)) {

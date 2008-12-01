@@ -32,6 +32,7 @@ import cytoscape.CyNode;
 import cytoscape.util.CytoscapeAction;
 import cytoscape.util.CytoscapeProgressMonitor;
 import cytoscape.data.CyAttributes;
+import cytoscape.layout.CyLayouts;
 import cytoscape.view.CyNetworkView;
 import cytoscape.view.CyNodeView;
 import giny.model.Node;
@@ -73,6 +74,7 @@ public class ImportTrainsAction extends SelectedNodeAction {
 				e.printStackTrace();
 			}
 			graph.setVisualStyle();
+			CyLayouts.getLayout("force-directed").doLayout();
 		} else {
 			return;
 		}

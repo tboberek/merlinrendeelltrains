@@ -2,6 +2,7 @@ package com.wackycow.cish4210.trains;
 
 import giny.model.Edge;
 
+import java.awt.Color;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,9 +20,11 @@ import cytoscape.data.CyAttributesUtils;
 import cytoscape.data.Semantics;
 import cytoscape.view.CytoscapeDesktop;
 import cytoscape.visual.VisualPropertyType;
+import cytoscape.visual.VisualStyle;
 import cytoscape.visual.calculators.BasicCalculator;
 import cytoscape.visual.mappings.ObjectMapping;
 import cytoscape.visual.mappings.PassThroughMapping;
+import cytoscape.visual.mappings.DiscreteMapping;
 
 public class TrainsGraph {
 
@@ -306,11 +309,19 @@ public class TrainsGraph {
     	// exist...)
     	pm.setControllingAttributeName ("train", network, false);
     	
+    	VisualStyle style = Cytoscape.getVisualMappingManager ().getVisualStyle ();
+    	Object colorDefaultValue = VisualPropertyType.NODE_FILL_COLOR.getDefault(style);
+    	DiscreteMapping nodeColorMapping = new DiscreteMapping(colorDefaultValue, 
+    	        "ID", ObjectMapping.NODE_MAPPING);
+    	nodeColorMapping.putMapValue(this.getEngineHouseId(), Color.GREEN.brighter());
+    	
     	// Create a calculator based on these settings
     	BasicCalculator calc = new BasicCalculator ("Train Calc", pm, VisualPropertyType.NODE_LABEL);
-    	
+    	calc.addMapping(nodeColorMapping);
     	// Set the node appearance calculator to the newly-created calculator
     	Cytoscape.getVisualMappingManager ().getVisualStyle ().getNodeAppearanceCalculator ().setCalculator(calc);
+    	Cytoscape.getVisualMappingManager().applyNodeAppearances(Cytoscape.getCurrentNetwork(), 
+    	        Cytoscape.getCurrentNetworkView());
     }
 
     public void reset() {
