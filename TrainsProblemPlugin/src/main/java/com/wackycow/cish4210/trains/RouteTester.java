@@ -33,7 +33,7 @@ public class RouteTester extends SelectedNodeAction {
 
     	// Create our TrainsGraph, giving it a name and a dispatcher
     	TrainsGraph graph = new TrainsGraph ("MRTP Routing Test Graph", 
-    			new NaiveDispatcher ());
+    			new BoberekCriticalPointDispatcher ());
  
     	// Create a train attribute, and set the visual style of the graph
     	// to display basedon that attribute.
