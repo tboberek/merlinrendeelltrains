@@ -20,6 +20,7 @@ public class RunSimulator extends SelectedNodeAction {
                         new Joes2ndDispatcher(),
             new OneAtATimeSchedulingDispatcher(),
             new McCuskerDispatcher(),
+            new BoberekCriticalPointDispatcher (),
 	};
 	
     public RunSimulator() {
@@ -44,6 +45,7 @@ public class RunSimulator extends SelectedNodeAction {
     	if (network.getClientData("TrainsGraph") != null) {
     		TrainsGraph graph = (TrainsGraph)network.getClientData("TrainsGraph");
     		graph.reset();
+    		disp.reset ();
     		graph.setDispatcher(disp);
     		disp.initialize();
     		lastGraph = graph;

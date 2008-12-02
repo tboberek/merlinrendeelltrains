@@ -142,6 +142,7 @@ public class TrainsGraph {
     public void moveTrain(Train t, String stationId) {
         dispatcher.checkMoveTrain(this, t, stationId);
         doMoveTrain(t, stationId);
+        dispatcher.notifyMoveTrainComplete(this, t, stationId);
     }
 
     public void createStation(String stationId) {
