@@ -8,12 +8,12 @@ import java.util.Map;
 
 
 public class BoberekCriticalPointDispatcher extends Dispatcher {
-	private Boolean m_Initialized = false;
-	private Boolean m_OnCriticalPoints = new Boolean (false);
+	protected Boolean	m_Initialized = false;
 	
-	private String	m_CriticalTrain = "";
+	private Boolean				m_OnCriticalPoints = new Boolean (false);
+	private String				m_CriticalTrain = "";
 	
-	private ArrayList<String> m_CriticalPoints = new ArrayList<String> ();
+	private ArrayList<String> 	m_CriticalPoints = new ArrayList<String> ();
 	
 	@Override
 	public void checkMoveTrain(TrainsGraph g, Train t, String stationId) {
@@ -66,7 +66,7 @@ public class BoberekCriticalPointDispatcher extends Dispatcher {
 			System.out.println ("DEBUG: Train: " + t.getId () + " is moving off a critical point to: " + stationId);
 			m_OnCriticalPoints = false;
 			m_CriticalTrain = "";
-			notify ();
+			notifyAll ();
 		}
 		else {
 			System.out.println ("DEBUG: Train: " + t.getId () + " is moving to another critical point: " + stationId);	
@@ -112,7 +112,7 @@ public class BoberekCriticalPointDispatcher extends Dispatcher {
 		}
 	}
 	
-	public ArrayList<String> getCriticalPoints (Map<String, Train> trainsList, String engineHouseId) {
+	protected ArrayList<String> getCriticalPoints (Map<String, Train> trainsList, String engineHouseId) {
 		// This map will count the number of times a station is visited
 		Map<String, Integer> stationCount = new HashMap<String, Integer> ();
 		
@@ -179,7 +179,6 @@ public class BoberekCriticalPointDispatcher extends Dispatcher {
 	
 	@Override
 	public String getName() {
-		// TODO Auto-generated method stub
 		return "Boberek Critical Point Dispatcher";
 	}
 
