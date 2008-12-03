@@ -21,6 +21,7 @@ public class RunSimulator extends SelectedNodeAction {
             new OneAtATimeSchedulingDispatcher(),
             new McCuskerDispatcher(),
             new BoberekCriticalPointDispatcher (),
+            new BoberekCriticalIntersectionDispatcher (),
 	};
 	
     public RunSimulator() {
