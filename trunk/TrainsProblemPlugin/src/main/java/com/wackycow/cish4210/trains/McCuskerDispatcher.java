@@ -1,6 +1,7 @@
 package com.wackycow.cish4210.trains;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -9,15 +10,25 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import cytoscape.CyEdge;
+import cytoscape.CyNetwork;
+import cytoscape.CyNode;
+import cytoscape.Cytoscape;
+import cytoscape.data.Semantics;
+
 
 public class McCuskerDispatcher extends SchedulingDispatcher {
 
+    private boolean buildCytoscapeGraph = true;
+    
     public McCuskerDispatcher() {
     }
 
     private Map<String,Node> buildDependencyGraph(Collection<Train> trains) {
         // The dependency graph.
         Map<String, Node> nodes = new HashMap<String, Node>();
+        CyNetwork net = null;
+        if (buildCytoscapeGraph) net = Cytoscape.createNetwork("Dependency Graph");
         
         for (Train t : trains) {
             List<String> route = t.getRoute();
@@ -34,6 +45,16 @@ public class McCuskerDispatcher extends SchedulingDispatcher {
                             Node otherNode = getNode(nodes,otherTrain,j+1);
                             selfNode.hasDependency.add(otherNode);
                             otherNode.dependencyOf.add(selfNode);
+                            if (buildCytoscapeGraph) {
+                                CyNode selfCyNode = Cytoscape.getCyNode(selfNode.toString(), true);
+                                CyNode otherCyNode = Cytoscape.getCyNode(otherNode.toString(), true);
+                                CyEdge edge = Cytoscape.getCyEdge(selfCyNode, 
+                                        otherCyNode, Semantics.INTERACTION, 
+                                        "depends", true, true);
+                                net.addNode(selfCyNode);
+                                net.addNode(otherCyNode);
+                                net.addEdge(edge);
+                            }
                         }
                     }
                 }
@@ -47,7 +68,8 @@ public class McCuskerDispatcher extends SchedulingDispatcher {
         for (int position:node.positions){
             Node previousNode = getNode(nodes,node.train,position-1);
             if (previousNode != null && previousNode.inCycle()) {
-                result.addAll(previousNode.getUpstream());
+                result.addAll(getCycle(previousNode,
+                        Arrays.asList(new Node[]{previousNode})));
                 result.addAll(extractPreviousCycleChain(nodes,previousNode));
             }
         }
@@ -59,9 +81,22 @@ public class McCuskerDispatcher extends SchedulingDispatcher {
         for (int position:node.positions){
             Node previousNode = getNode(nodes,node.train,position+1);
             if (previousNode != null && previousNode.inCycle()) {
-                result.addAll(previousNode.getUpstream());
-                result.addAll(extractPreviousCycleChain(nodes,previousNode));
+                result.addAll(getCycle(previousNode,
+                        Arrays.asList(new Node[]{previousNode})));
+                result.addAll(extractSubsequentCycleChain(nodes,previousNode));
             }
+        }
+        return result;
+    }
+    
+    private List<Node> getCycle(Node node, List<Node> found) {
+        List<Node> result = new ArrayList<Node>(found);
+        result.add(node);
+        for (Node n : node.dependencyOf) {
+            if (!n.inCycle()) continue;
+            if (result.contains(n)) continue;
+            result.add(n);
+            result.addAll(getCycle(n,result));
         }
         return result;
     }
@@ -70,7 +105,8 @@ public class McCuskerDispatcher extends SchedulingDispatcher {
         List<Set<Node>> cycles = new ArrayList<Set<Node>>();
         for (Node node : nodes.values()) {
             if (node.inCycle() && !isListed(cycles,node)) {
-                Set<Node> cycle = new HashSet<Node>(node.getUpstream());
+                Set<Node> cycle = new HashSet<Node>(getCycle(node,
+                        Arrays.asList(new Node[]{node})));
                 cycle.addAll(extractPreviousCycleChain(nodes,node));
                 cycle.addAll(extractSubsequentCycleChain(nodes,node));
                 cycles.add(cycle);
@@ -87,9 +123,11 @@ public class McCuskerDispatcher extends SchedulingDispatcher {
             System.out.println(node.toString());
         }
         for (Node node : cycle) {
+            if (!node.inCycle()) continue;
             for (Node depNode : node.hasDependency) {
                 for (int position : node.positions) {
                     for (int depPosition : depNode.positions) {
+                        if (depPosition+1 >= depNode.train.getRoute().size()) continue;
                         Node depSolutionNode = getNode(nodes, node.train,position-1);
                         if (depSolutionNode != null && depSolutionNode.inCycle())
                             continue;
