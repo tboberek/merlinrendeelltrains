@@ -6,15 +6,45 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-
+/**
+ * This class implements the Critical Points Dispatcher: Attempt 1 described
+ * in 'A Simulator to Test Solutions to the Merlin-Randell Problem of Trains 
+ * Scheduling'
+ * 
+ * @author T.J. Boberek
+ *
+ */
 public class BoberekCriticalPointDispatcher extends Dispatcher {
+	/**
+	 * A flag to indicate if this dispatcher has been initialized or not.
+	 */
 	protected Boolean	m_Initialized = false;
 	
+	/**
+	 * A flag that indicates if there is a critical train
+	 */
 	private Boolean				m_OnCriticalPoints = new Boolean (false);
+	
+	/**
+	 * The ID of the current critical train (if any)
+	 */
 	private String				m_CriticalTrain = "";
 	
+	/**
+	 * The list of critical points in the trains routes
+	 */
 	private ArrayList<String> 	m_CriticalPoints = new ArrayList<String> ();
 	
+	/**
+	 * checkMoveTrain() is called whenever a Train attempts to move.  It first
+	 * checks to see if this dispatcher has been initialized (and initializes the
+	 * dispatcher if it has not been) and then calls determineTrainMove(), which
+	 * will actually block or allow the train to proceed.
+	 * 
+	 * @param g			The TrainsGraph that is being traversed.
+	 * @param t			The Train that is attempting to move.
+	 * @param stationID	The ID of the station the Train is trying to reach.
+	 */
 	@Override
 	public void checkMoveTrain(TrainsGraph g, Train t, String stationId) {
 		// Synchronize on the initialized variable and check to see if we
@@ -23,19 +53,7 @@ public class BoberekCriticalPointDispatcher extends Dispatcher {
 			if (!m_Initialized) {
 				// Determine the routes and identify the necessary critical
 				// points for all the trains in the graph
-				m_CriticalPoints = getCriticalPoints (g.getTrains (), g.getEngineHouseId ());
-				System.out.println ("---- Critical Points ----");
-				System.out.println (m_CriticalPoints);
-				System.out.println ("-------------------------");
-				
-				//
-				for (Train train : g.getTrains ().values ())
-				{
-					System.out.println ("---- Path for: " + train.getId () + "----");
-					System.out.println (train.getRoute ());
-					System.out.println ("-------------------------");					
-				}
-				
+				m_CriticalPoints = getCriticalPoints (g.getTrains (), g.getEngineHouseId ());			
 				m_Initialized = true;
 			}
 		}
@@ -45,11 +63,6 @@ public class BoberekCriticalPointDispatcher extends Dispatcher {
 		try {
 			determineTrainMove (t, stationId);	
 		}
-		catch (IllegalMonitorStateException ex) {
-			System.out.println (ex.getMessage());
-			ex.printStackTrace();
-			
-		}
 		catch (Exception e) {
 			// If we hit this, there was an unintended problem, just print the 
 			// stack trace
@@ -57,61 +70,76 @@ public class BoberekCriticalPointDispatcher extends Dispatcher {
 		}	
 	}
 	
+	/**
+	 * notifyMoveTrainComplete () is called AFTER the train has successfully moved. It checks
+	 * to see if the train has moved onto a non-critical point, and if so, removes the train's
+	 * 'critical train' status. 
+	 * 
+	 * @param g			The TrainsGraph that is being traversed.
+	 * @param t			The Train that is has moved.
+	 * @param stationID	The ID of the station the Train has moved to.
+	 */
 	synchronized public void notifyMoveTrainComplete(TrainsGraph g, Train t, String stationId)
 	{
 		// Check to see if we're going to be moving off a critical point.  If we are,
 		// then we should notify those who are waiting on a critical point
 		if (m_OnCriticalPoints && t.getId () == m_CriticalTrain && 
 				!m_CriticalPoints.contains(stationId)) {
-			System.out.println ("DEBUG: Train: " + t.getId () + " is moving off a critical point to: " + stationId);
+			// We're no longer a critical train, so clear the critical train
+			// string and set the critical train flag to false.
 			m_OnCriticalPoints = false;
 			m_CriticalTrain = "";
+			
+			// Notify anyone waiting to become a critical train.
 			notifyAll ();
-		}
-		else {
-			System.out.println ("DEBUG: Train: " + t.getId () + " is moving to another critical point: " + stationId);	
 		}		
 	}
 	
+	/**
+	 * determineTrainMove () is called to actually control the movements of the
+	 * train.  It will allow the train to move or force it to wait if needed.  
+	 * 
+	 * @param t			The Train that is attempting to move.
+	 * @param stationID	The ID of the station the Train is trying to reach.
+	 */
 	synchronized private void determineTrainMove (Train t, String stationId) throws Exception {
-		// Check to see if this train is on a critical point.  If it is not, then
+		// Check to see if this train is moving to a critical point.  If it is not, then
 		// just let it go about its business, since it can't bother any other
-		// trains
-		if (! m_CriticalPoints.contains(stationId) && t.getId () != m_CriticalTrain) {
-			// The train is moving to a critical point, and is not the critical train,
-			// so we can return immediately
-			System.out.println ("DEBUG: Non-critical train:" + t.getId () + " moving to non-critical point: " + stationId);
+		// trains.
+		if (! m_CriticalPoints.contains(stationId)) {
 			return;
 		}
 		
 		// If we get here, then the train is trying to move to a station that is on
 		// the critical point list. 
+		
 		// While someone's on a critical point and it isn't this train,
 		// wait until the current train is off the critical points.
 		while (m_OnCriticalPoints && t.getId () != m_CriticalTrain) {
-			// If we're on the critical points, and this train is not the 
-			// train currently on a critical point, force this train to wait
-			// on the 
-			System.out.println ("DEBUG!!!!!: Train: " + t.getId () + " is waiting to move to: " + stationId);
 			wait ();
-			System.out.println ("DEBUG: Train: " + t.getId () + " is able to move to: " + stationId);
 		}
 		
-		// If we're the train on the critical points, then we can go on our
-		// merry way.
+		// If we're the critical train, then we can go on our merry way.
 		if (m_OnCriticalPoints && t.getId () == m_CriticalTrain) {	
 			return;
 		}
-		else {
-			// At this point, we must be moving to a critical point, and we must not
-			// be in the middle of a critical point move.  Set the critical points
-			// flag and set the ID of the critical train.
-			System.out.println ("DEBUG: Train: " + t.getId () + " is moving to a critical point: " + stationId);
-			m_OnCriticalPoints = true;
-			m_CriticalTrain = t.getId ();
-		}
+		
+		// At this point, we must be moving to a critical point, and we must not
+		// be the critical train.  Set the critical points flag and set the ID 
+		// of the critical train.
+		m_OnCriticalPoints = true;
+		m_CriticalTrain = t.getId ();
+
 	}
 	
+	/**
+	 * getCriticalPoints () examines the map the routes of the provided trains and creates
+	 * a list of 'critical points': stations that are visited by more than one train.
+	 * 
+	 * @param trainsList	The list of trains to examine.
+	 * @param engineHouseId	The ID of the engine house, since that is never a critical point.
+	 * @return				A list of critical points between the provided trains.
+	 */
 	protected ArrayList<String> getCriticalPoints (Map<String, Train> trainsList, String engineHouseId) {
 		// This map will count the number of times a station is visited
 		Map<String, Integer> stationCount = new HashMap<String, Integer> ();
@@ -171,21 +199,33 @@ public class BoberekCriticalPointDispatcher extends Dispatcher {
 		return criticalPoints;
 	}
 
+	/**
+	 * reset() is called when the dispatcher needs to re-acquire the list of 
+	 * critical points.
+	 * 
+	 */
 	public void reset () {
 		synchronized (m_Initialized) {
 			m_Initialized = false;
 		}
 	}
 	
+	/**
+	 * getName() returns the name of the current dispatcher.
+	 * 
+	 * @return The name of the current dispatcher.
+	 */
 	@Override
 	public String getName() {
 		return "Boberek Critical Point Dispatcher";
 	}
 
+	/**
+	 * initialize() does nothing in this dispatcher.
+	 */
 	@Override
 	public void initialize() {
-		// TODO Auto-generated method stub
-
+	
 	}
 
 }

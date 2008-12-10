@@ -26,22 +26,60 @@ import cytoscape.visual.mappings.ObjectMapping;
 import cytoscape.visual.mappings.PassThroughMapping;
 import cytoscape.visual.mappings.DiscreteMapping;
 
+/**
+ * TrainsGraph is the graph that maintains the structure and enforces the
+ * rules of the simulation.  It maintains the current state of the graph,
+ * the Dispatcher used to schedule the trains, the trains themselves and
+ * which stations they are at, and a list of objects used to synchronize
+ * the stations to enforce deadlocks when the trains are not scheduled
+ * correctly.
+ *
+ */
 public class TrainsGraph {
 
+	/**
+	 * The Cytoscape CyNetwork that is used to store the nodes and edges
+	 * that will be traversed by the trains.
+	 */
     private CyNetwork network;
+    
+    /**
+     * The Dispatcher that is checked whenever a train attempts to move.
+     */
     private Dispatcher dispatcher;
+    
+    /**
+     * A HashMap of the stations and which trains are present at each 
+     * station.
+     */
     private Map<String,Train> trains = new HashMap<String,Train> ();
     
+    /**
+     * A HashMap of objects (keyed on the station ID) used to enforce the
+     * deadlock condition when trains are not correctly scheduled.
+     */
+    private Map<String,Object> monitors = new HashMap<String,Object>();
+    
+    /**
+     * A flag indicating whether the TrainsGraph system has been stopped.
+     */
     private boolean stop = false;
     
-    private Map<String,Object> monitors = new HashMap<String,Object>();
 
+    /**
+     * Constructor used to associate an existing Cytoscape CyNetwork with
+     * the TrainsGraph being created.
+     * 
+     * @param network	The existing network to use to track the nodes and
+     * edges of the graph.
+     */
 	public TrainsGraph(CyNetwork network) {
         this.network = network;
     }
 	
 	/**
-	 * Generates a Cytoscape network and attaches to it.  
+	 * Constructor used to create a new Cytoscape CyNetwork with a given id
+	 * and associate it with a pre-existing dispatcher.
 	 * 
 	 * @param id			The id to use for the network
 	 * @param Dispatcher	The dispatcher to use to schedule the trains
@@ -58,16 +96,30 @@ public class TrainsGraph {
 		network.putClientData("TrainsGraph", this);
 	}
     
+	/**
+	 * Method to determine if the simulation has been stopped.
+	 * 
+	 * @return	true if the simulation has been stopped, false otherwise.
+	 */
 	public synchronized boolean isStopped() {
 	    return stop;
 	}
 	
+	/**
+	 * Method used to flag the simulation as stopped.
+	 * 
+	 */
 	public void stop() {
 	    synchronized(this) {
 	        stop = true;
 	    }
 	}
 	
+	/**
+	 * Given an id for a station, returns the monitor used to 
+	 * @param stationId
+	 * @return
+	 */
     private synchronized Object getMonitor(String stationId) {
         if (!monitors.containsKey(stationId)) {
             monitors.put(stationId, new Object());
